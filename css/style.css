@@ -95,12 +95,7 @@ p{
 /* Header Styles
 ---------------------------------*/
 
-.header{
-	text-align:center;
-	background:url(../img/background.png) left top;
-	padding:280px 0;
 
-}
 .container_head{
 	text-align:center;
 	margin:-220px 0 240px 0;
