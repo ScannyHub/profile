@@ -1,3 +1,10 @@
+/* Block Quote
+---------------------------------*/
+blockquote p {
+  font-size: 12px !important;
+}
+
+
 /* Modal 
 ---------------------------------*/
 /* The Modal (background) */
