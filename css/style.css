@@ -12,12 +12,11 @@
 .header{
 	text-align:center;
 	background:url(../img/background.png) left top !important;
-	padding:280px 0;
+	padding:80px !important;
 
 }
 .container_head{
 	text-align:center;
-	margin:-220px 0 240px 0;
 
 }
 .logo{
@@ -30,7 +29,7 @@
 	font-weight:400;
 	letter-spacing: -1px;
 	margin:0 0 5px 0 ;
-	color: #05ACF2;
+
 }
 
 .we-create{
@@ -169,7 +168,7 @@ h6{
 	font-family: 'Open Sans', sans-serif;
 	font-weight:400;
 	text-align:center;
-	margin:0 0 60px 0;
+	margin:0 0 37px 0;
 }
 p{
 	line-height:24px;
@@ -211,7 +210,7 @@ p{
 
 .main-nav li a:hover{ 
 	text-decoration:none;
-	color: #7cc576;
+	color: #0182BA;
 }
 
 .small-logo{ 
@@ -646,18 +645,17 @@ border: 2px solid #fff;
 	overflow:hidden;
 }
 .social-link{
-	padding:35px 0;
-	margin:0 0 0 68px;
 	display:block;
 	overflow:hidden;
 	list-style:none;
 }
 .social-link li{
-	float:left;
-	margin-right:8px;
+	margin-top:5px;
 }
 .social-link li a{
-	display:block;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 	width:50px;
 	height:50px;
 	text-align:center;
