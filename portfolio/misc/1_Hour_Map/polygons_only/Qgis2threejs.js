@@ -1941,96 +1941,40 @@ Q3D.PolygonLayer.prototype.build = function (parent) {
 
   if (this.objType == "Extruded") {
 	  
+	  
+	// (3) Function for creating the individual building polygons 
     var createSubObject = function (f, polygon, z) {
       var shape = new THREE.Shape(Q3D.Utils.arrayToVec2Array(polygon[0]));
       for (var i = 1, l = polygon.length; i < l; i++) {
         shape.holes.push(new THREE.Path(Q3D.Utils.arrayToVec2Array(polygon[i])));
       }
+	  
+	  // Where the problems start...
+	  
+	  // Here each geometry is created turned into a mesh with its unqiue material
       var geom = new THREE.ExtrudeGeometry(shape, {bevelEnabled: false, amount: f.h});
       var mesh = new THREE.Mesh(geom, materials[f.m].m);
       mesh.position.z = z;
       return mesh;
+	  
+	  //I am not sure how I can merge each polygons geometry with the others whilst allowing each polygon to hold onto its unique colouring...
+	  
     };
 	
-
+	// (2) Function for creating polygon layer
     var createObject = function (f) {
-      if (f.polygons.length == 1){
-		//var endmat = singlepoly(f, f.polygons[0], f.zs[0]);//remove to reset
-		return createSubObject(f, f.polygons[0], f.zs[0]);
+      if (f.polygons.length == 1){ // TRUE for building polygons
+		return createSubObject(f, f.polygons[0], f.zs[0]); // calls function to create each building
 		  
 	  } 
-
-      var group = new THREE.Group();
-      for (var i = 0, l = f.polygons.length; i < l; i++) {
-        group.add(createSubObject(f, f.polygons[i], f.zs[i]));
-      }
-	  
-      return group;
     };
   }
   
- 	///////////////// END OF WIP ///////////////// 
   
-  
-  
-  else {    // this.objType == "Overlay"
-  
-    var relativeToDEM = (this.am == "relative"),    // altitude mode
-        sbRelativeToDEM = (this.sbm == "relative"), // altitude mode of bottom height of side
-        dem = project.layers[0],
-        z0 = project.zShift * project.zScale;
-
-    var createObject = function (f) {
-      var polygons = (relativeToDEM) ? (f.split_polygons || []) : f.polygons;
-
-      var zFunc;
-      if (relativeToDEM) zFunc = function (x, y) { return dem.getZ(x, y) + f.h; };
-      else zFunc = function (x, y) { return z0 + f.h; };
-
-      var geom = Q3D.Utils.createOverlayGeometry(f.triangles, polygons, zFunc);
-
-      // set UVs
-      if (materials[f.m].i !== undefined) Q3D.Utils.setGeometryUVs(geom, project.width, project.height);
-
-      var mesh = new THREE.Mesh(geom, materials[f.m].m);
-
-      if (f.mb === undefined && f.ms === undefined) return mesh;
-
-      // borders and sides
-      var bzFunc, geom, vertices;
-      if (sbRelativeToDEM) bzFunc = function (x, y) { return dem.getZ(x, y) + f.sb; };
-      else bzFunc = function (x, y) { return z0 + f.sb; };
-
-      for (var i = 0, l = f.polygons.length; i < l; i++) {
-        var polygon = f.polygons[i];
-        for (var j = 0, m = polygon.length; j < m; j++) {
-          if (relativeToDEM || sbRelativeToDEM) {
-            vertices = dem.segmentizeLineString(polygon[j], zFunc);
-          }
-          else {
-            vertices = Q3D.Utils.arrayToVec3Array(polygon[j], zFunc);
-          }
-
-          if (f.mb) {
-            geom = new THREE.Geometry();
-            geom.vertices = vertices;
-            mesh.add(new THREE.Line(geom, materials[f.mb].m));
-          }
-
-          if (f.ms) {
-            geom = Q3D.Utils.createWallGeometry(vertices, bzFunc);
-            mesh.add(new THREE.Mesh(geom, materials[f.ms].m));
-          }
-        }
-      }
-      return mesh;
-    };
-  }
-
-  // each feature in this layer
+   // (1) function for manufacturing each layer
   this.f.forEach(function (f, fid) {
-    f.objs = [];
-    var obj = createObject(f);
+    f.objs = []; // create array of objects
+    var obj = createObject(f); // call polygon creation method
     obj.userData.layerId = this.index;
     obj.userData.featureId = fid;
     this.addObject(obj);
@@ -2039,6 +1983,9 @@ Q3D.PolygonLayer.prototype.build = function (parent) {
 
   if (parent) parent.add(this.objectGroup);
 };
+
+ 	///////////////// END OF WIP ///////////////// 
+
 
 Q3D.PolygonLayer.prototype.buildLabels = function (parent, parentElement) {
   var zFunc, getPointsFunc = function (f) { return f.centroids; };
