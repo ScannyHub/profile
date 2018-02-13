@@ -1936,53 +1936,63 @@ Q3D.PolygonLayer.prototype.constructor = Q3D.PolygonLayer;
 	
 	
 Q3D.PolygonLayer.prototype.build = function (parent) {
-  var materials = this.materials,
-      project = this.project;
+	var materials = this.materials,
+	project = this.project;
+	var geometries = [];
+	var count = 0;
 
-  if (this.objType == "Extruded") {
-	  
-	  
-	// (3) Function for creating the individual building polygons 
-    var createSubObject = function (f, polygon, z) {
-      var shape = new THREE.Shape(Q3D.Utils.arrayToVec2Array(polygon[0]));
-      for (var i = 1, l = polygon.length; i < l; i++) {
-        shape.holes.push(new THREE.Path(Q3D.Utils.arrayToVec2Array(polygon[i])));
-      }
-	  
-	  // Where the problems start...
-	  
-	  // Here each geometry is created turned into a mesh with its unqiue material
-      var geom = new THREE.ExtrudeGeometry(shape, {bevelEnabled: false, amount: f.h});
-      var mesh = new THREE.Mesh(geom, materials[f.m].m);
-      mesh.position.z = z;
-      return mesh;
-	  
-	  //I am not sure how I can merge each polygons geometry with the others whilst allowing each polygon to hold onto its unique colouring...
-	  
-    };
 	
-	// (2) Function for creating polygon layer
-    var createObject = function (f) {
-      if (f.polygons.length == 1){ // TRUE for building polygons
-		return createSubObject(f, f.polygons[0], f.zs[0]); // calls function to create each building
-		  
-	  } 
-    };
-  }
+		if (this.objType == "Extruded") {
+		// (3) Function for creating the individual building polygons 
+		var createSubObject = function (f, polygon, z) {
+
+			var shape = new THREE.Shape(Q3D.Utils.arrayToVec2Array(polygon[0]));
+			for (var i = 1, l = polygon.length; i < l; i++) {
+				shape.holes.push(new THREE.Path(Q3D.Utils.arrayToVec2Array(polygon[i])));
+			}
+			var geom = new THREE.ExtrudeBufferGeometry(shape, {bevelEnabled: false, amount: f.h});
+			geom = geom.toNonIndexed();
+			geom.attributes.position.z = z
+			count += geom.attributes.position.count;
+			geometries.push(geom);
+
+		};
+	}
   
   
    // (1) function for manufacturing each layer
   this.f.forEach(function (f, fid) {
-    f.objs = []; // create array of objects
-    var obj = createObject(f); // call polygon creation method
-    obj.userData.layerId = this.index;
-    obj.userData.featureId = fid;
-    this.addObject(obj);
-    f.objs.push(obj);
+	if (f.polygons.length == 1){
+			createSubObject(f, f.polygons[0], f.zs[0]);
+		} 
+    //this.addObject(obj);
   }, this);
 
+	var bufferGeometry = new THREE.BufferGeometry();
+	bufferGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );  
+  	// merge
+	for ( var i = 0, offset = 0, l = geometries.length; i < l; i ++ ) {
+		var geometry = geometries[i];
+		bufferGeometry.merge(geometry, offset); // must be non-indexed BufferGeometry
+		offset += geometry.attributes.position.count;
+		
+	}
+	
+	var material = new THREE.MeshPhongMaterial( {
+		color: 0xff00ff,
+		specular: 0x050505,
+		shininess: 50,
+		flatShading: true // normals not required
+	} );
+	
+	
+	var mesh = new THREE.Mesh(bufferGeometry, material);
+	this.addObject(mesh);
+	
+	
+  
   if (parent) parent.add(this.objectGroup);
-};
+    };
 
  	///////////////// END OF WIP ///////////////// 
 
