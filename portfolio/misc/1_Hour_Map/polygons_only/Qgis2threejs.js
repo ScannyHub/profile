@@ -1938,7 +1938,7 @@ Q3D.PolygonLayer.prototype.constructor = Q3D.PolygonLayer;
 Q3D.PolygonLayer.prototype.build = function (parent) {
 	var materials = this.materials,
 	project = this.project;
-	var geometries = [];
+	var geometries = [[],[],[],[],[]];
 	var count = 0;
 
 	
@@ -1952,9 +1952,22 @@ Q3D.PolygonLayer.prototype.build = function (parent) {
 			}
 			var geom = new THREE.ExtrudeBufferGeometry(shape, {bevelEnabled: false, amount: f.h});
 			geom = geom.toNonIndexed();
-			geom.attributes.position.z = z
+			geom.translate(0,0,z)
 			count += geom.attributes.position.count;
-			geometries.push(geom);
+			
+			if(f.m==0){
+
+			geometries[0].push(geom)}
+			
+			else if(f.m==1){
+			geometries[1].push(geom)}
+			else if(f.m==2){
+			geometries[2].push(geom)}
+			else if(f.m==3){
+			geometries[3].push(geom)}
+			else{
+				geometries[4].push(geom)
+			}
 
 		};
 	}
@@ -1969,26 +1982,58 @@ Q3D.PolygonLayer.prototype.build = function (parent) {
   }, this);
 
 	var bufferGeometry = new THREE.BufferGeometry();
-	bufferGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );  
+	bufferGeometry.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );
+
+		var bufferGeometry1 = new THREE.BufferGeometry();
+	bufferGeometry1.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );
+	
+		var bufferGeometry2 = new THREE.BufferGeometry();
+	bufferGeometry2.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );
+	
+		var bufferGeometry3 = new THREE.BufferGeometry();
+	bufferGeometry3.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );
+	
+		var bufferGeometry4 = new THREE.BufferGeometry();
+	bufferGeometry4.addAttribute( 'position', new THREE.Float32BufferAttribute( count * 3, 3 ) );
+
+
+
+
+	
   	// merge
-	for ( var i = 0, offset = 0, l = geometries.length; i < l; i ++ ) {
-		var geometry = geometries[i];
-		bufferGeometry.merge(geometry, offset); // must be non-indexed BufferGeometry
-		offset += geometry.attributes.position.count;
-		
+	for ( var i = 0, l = geometries.length; i < l; i ++ ) {
+		var index = geometries[i];
+		for ( var j = 0, offset = 0, k = geometries[i].length; j < k; j ++ ) {		
+			var geometry = geometries[i][j];
+			
+			if(i==0){
+			bufferGeometry.merge(geometry, offset)}
+			else if(i==1){
+			bufferGeometry1.merge(geometry, offset)}
+			else if(i==2){
+			bufferGeometry2.merge(geometry, offset)}
+			else if(i==3){
+			bufferGeometry3.merge(geometry, offset)}
+			else{
+				bufferGeometry4.merge(geometry, offset)
+			}
+			//bufferGeometry.merge(geometry, offset); // must be non-indexed BufferGeometry
+			offset += geometry.attributes.position.count;
+			
+		}
 	}
 	
-	var material = new THREE.MeshPhongMaterial( {
-		color: 0xff00ff,
-		specular: 0x050505,
-		shininess: 50,
-		flatShading: true // normals not required
-	} );
 	
-	
-	var mesh = new THREE.Mesh(bufferGeometry, material);
+	var mesh = new THREE.Mesh(bufferGeometry, materials[0].m);
+	var mesh1 = new THREE.Mesh(bufferGeometry1, materials[1].m);
+	var mesh2 = new THREE.Mesh(bufferGeometry2, materials[2].m);
+	var mesh3 = new THREE.Mesh(bufferGeometry3, materials[3].m);
+	var mesh4 = new THREE.Mesh(bufferGeometry4, materials[4].m);
 	this.addObject(mesh);
-	
+	this.addObject(mesh1);
+	this.addObject(mesh2);
+	this.addObject(mesh3);
+	this.addObject(mesh4);
 	
   
   if (parent) parent.add(this.objectGroup);
